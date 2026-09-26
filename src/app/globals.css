@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-[#121212] text-white;
+  }
+
+  /* Spotify-style custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #121212;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1DB954;
+  }
+
+  /* Date input dark mode */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Spotify green glow effect */
+  .spotify-glow {
+    box-shadow: 0 0 20px rgba(29, 185, 84, 0.25);
+  }
+
+  .spotify-glow-sm {
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.2);
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-[#1DB954] to-[#1ed760] bg-clip-text text-transparent;
+  }
+
+  /* Spotify card hover */
+  .sp-card {
+    @apply bg-[#181818] rounded-2xl transition-all duration-200 hover:bg-[#282828];
+  }
+}
