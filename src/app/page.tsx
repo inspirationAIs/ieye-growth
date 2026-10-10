@@ -20,24 +20,30 @@ export default function HomePage() {
   const { session, ready } = useAuth();
   const [profile, setProfile] = useState<StoredProfile | null>(null);
   const [showSetup, setShowSetup] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem('ieye_profile');
-    if (stored) {
-      try {
-        setProfile(JSON.parse(stored));
-      } catch {
+    if (!ready) return;
+
+    if (session) {
+      // Logged in: Check for profile
+      const stored = localStorage.getItem('ieye_profile');
+      if (stored) {
+        try {
+          setProfile(JSON.parse(stored));
+        } catch {
+          setShowSetup(true);
+        }
+      } else {
         setShowSetup(true);
       }
     } else {
-      setShowSetup(true);
+      // Not logged in: Clear profile and setup state
+      setProfile(null);
+      setShowSetup(false);
     }
-  }, []);
+  }, [ready, session]);
 
   const handleSetupComplete = useCallback(async (data: { name: string; birthdate: string; gender: 'female' | 'male'; parentEmail: string }) => {
-    // 수정할 때는 기존 id를 유지해야 이미 쌓인 진단/성장 기록이 사라지지 않습니다.
     const newProfile: StoredProfile = {
       id: profile?.id ?? `child_${Date.now()}`,
       ...data,
@@ -48,10 +54,44 @@ export default function HomePage() {
     setShowSetup(false);
   }, [profile]);
 
-  if (!mounted) return null;
-  if (showSetup) return <SetupModal onComplete={handleSetupComplete} />;
+  if (!ready) return null; // 로딩 중
+
+  // 1. 로그인 안 된 상태 (랜딩/로그인 요구 화면)
+  if (!session) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 animate-fade-in text-center px-4">
+        <div className="w-20 h-20 bg-[#282828] rounded-full flex items-center justify-center border border-[#1DB954]/20 mb-4 shadow-lg shadow-[#1DB954]/10">
+          <span className="text-4xl">🌱</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+          우리아이 발달, <br />
+          <span className="text-[#1DB954]">안전하게 기록하고 확인하세요</span>
+        </h1>
+        <p className="text-[#b3b3b3] text-sm">
+          로그인 후 아이의 정보를 입력하면,<br />
+          언제 어디서나 성장 기록과 발달 진단을 확인할 수 있어요.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 pt-6 w-full max-w-xs">
+          <Link href="/login" className="w-full text-center px-6 py-3.5 rounded-full bg-[#1DB954] text-black text-sm font-black hover:bg-[#1ed760] transition-all">
+            로그인
+          </Link>
+          <Link href="/signup" className="w-full text-center px-6 py-3.5 rounded-full border border-[#535353] text-[#b3b3b3] text-sm font-bold hover:text-white hover:border-white transition-all">
+            회원가입
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. 로그인되었으나 아이 정보가 없는 상태
+  if (showSetup) {
+    return <SetupModal onComplete={handleSetupComplete} />;
+  }
+
+  // 3. 아이 정보 로딩 대기
   if (!profile) return null;
 
+  // 4. 메인 대시보드
   const ageInfo = formatAgeDetailed(profile.birthdate);
   const milestone = getMilestoneForAge(ageInfo.ageMonths);
 
@@ -63,20 +103,6 @@ export default function HomePage() {
         birthdate={profile.birthdate}
         gender={profile.gender}
       />
-
-      {/* 비회원 안내 */}
-      {ready && !session && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#1DB954]/5 border border-[#1DB954]/30 rounded-2xl p-4">
-          <div>
-            <p className="font-black text-white text-sm">🔐 로그인하면 기록이 계속 쌓여요</p>
-            <p className="text-[#727272] text-xs mt-0.5">지금은 이 브라우저에만 저장됩니다. 회원가입하면 지금까지의 기록이 계정으로 옮겨져 다른 기기에서도 볼 수 있어요.</p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <Link href="/login" className="px-4 py-2 rounded-full border border-[#535353] text-xs font-bold text-[#b3b3b3] hover:text-white hover:border-white transition-all">로그인</Link>
-            <Link href="/signup" className="px-4 py-2 rounded-full bg-[#1DB954] text-black text-xs font-black hover:bg-[#1ed760] transition-all">회원가입</Link>
-          </div>
-        </div>
-      )}
 
       {/* Quick Action Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -99,7 +125,6 @@ export default function HomePage() {
           <div className="mt-3 text-[#1DB954] text-xs font-bold group-hover:translate-x-1 transition-transform">기록하기 →</div>
         </Link>
       </div>
-
 
       {/* Current Milestone Info */}
       {milestone && (
@@ -148,3 +173,4 @@ export default function HomePage() {
     </div>
   );
 }
+
