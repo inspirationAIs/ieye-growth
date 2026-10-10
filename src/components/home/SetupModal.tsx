@@ -33,6 +33,12 @@ export function SetupModal({ onComplete }: SetupModalProps) {
           </div>
           <h2 className="text-2xl font-black text-white">아이아이에 오신 것을 환영합니다!</h2>
           <p className="text-[#b3b3b3] text-sm mt-1">아이 정보를 입력하고 맞춤 발달 가이드를 받아보세요.</p>
+          <div className="mt-3 pt-3 border-t border-[#282828] flex items-center justify-between text-xs">
+            <span className="text-[#727272]">이미 계정이 있으신가요?</span>
+            <a href="/ieye-growth/login/" className="text-[#1DB954] font-bold hover:underline">
+              기존 계정으로 로그인 →
+            </a>
+          </div>
         </div>
 
         <div className="p-6 space-y-4">
