@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/layout/Navbar';
+import { AuthProvider } from '@/components/auth/AuthProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -26,24 +27,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-[#121212] antialiased">
-        <Navbar />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          {children}
-        </main>
-        <footer className="border-t border-[#282828] bg-[#0a0a0a] mt-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-[#b3b3b3]">
-              <div className="flex items-center space-x-2">
-                <span className="text-[#1DB954] font-black text-lg">●</span>
-                <span className="font-bold text-white">아이아이 (iEye Growth)</span>
+        <AuthProvider>
+          <Navbar />
+          <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            {children}
+          </main>
+          <footer className="border-t border-[#282828] bg-[#0a0a0a] mt-16">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-[#b3b3b3]">
+                <div className="flex items-center space-x-2">
+                  <span className="text-[#1DB954] font-black text-lg">●</span>
+                  <span className="font-bold text-white">아이아이 (iEye Growth)</span>
+                </div>
+                <p className="text-xs text-center text-[#727272]">
+                  본 서비스는 KDST 표준 가이드라인 기반 자가선별 도구이며, 의료적 진단을 대신할 수 없습니다.
+                </p>
+                <p className="text-[#727272] text-xs">© 2024 iEye Growth</p>
               </div>
-              <p className="text-xs text-center text-[#727272]">
-                본 서비스는 KDST 표준 가이드라인 기반 자가선별 도구이며, 의료적 진단을 대신할 수 없습니다.
-              </p>
-              <p className="text-[#727272] text-xs">© 2024 iEye Growth</p>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -5,6 +5,8 @@ import { SetupModal } from '@/components/home/SetupModal';
 import { getMilestoneForAge } from '@/data/kdst';
 import { formatAgeDetailed } from '@/lib/age-calculator';
 import Link from 'next/link';
+import { saveProfile } from '@/lib/storage';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface StoredProfile {
   id: string;
@@ -15,6 +17,7 @@ interface StoredProfile {
 }
 
 export default function HomePage() {
+  const { session, ready } = useAuth();
   const [profile, setProfile] = useState<StoredProfile | null>(null);
   const [showSetup, setShowSetup] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -34,26 +37,16 @@ export default function HomePage() {
   }, []);
 
   const handleSetupComplete = useCallback(async (data: { name: string; birthdate: string; gender: 'female' | 'male'; parentEmail: string }) => {
+    // 수정할 때는 기존 id를 유지해야 이미 쌓인 진단/성장 기록이 사라지지 않습니다.
     const newProfile: StoredProfile = {
-      id: `child_${Date.now()}`,
+      id: profile?.id ?? `child_${Date.now()}`,
       ...data,
     };
 
-    localStorage.setItem('ieye_profile', JSON.stringify(newProfile));
-
-    try {
-      await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProfile),
-      });
-    } catch (e) {
-      console.warn('Could not save to Google Sheets:', e);
-    }
-
+    saveProfile(newProfile); // 저장 + (로그인 상태면) 계정에 자동 저장
     setProfile(newProfile);
     setShowSetup(false);
-  }, []);
+  }, [profile]);
 
   if (!mounted) return null;
   if (showSetup) return <SetupModal onComplete={handleSetupComplete} />;
@@ -71,27 +64,42 @@ export default function HomePage() {
         gender={profile.gender}
       />
 
+      {/* 비회원 안내 */}
+      {ready && !session && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#1DB954]/5 border border-[#1DB954]/30 rounded-2xl p-4">
+          <div>
+            <p className="font-black text-white text-sm">🔐 로그인하면 기록이 계속 쌓여요</p>
+            <p className="text-[#727272] text-xs mt-0.5">지금은 이 브라우저에만 저장됩니다. 회원가입하면 지금까지의 기록이 계정으로 옮겨져 다른 기기에서도 볼 수 있어요.</p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Link href="/login" className="px-4 py-2 rounded-full border border-[#535353] text-xs font-bold text-[#b3b3b3] hover:text-white hover:border-white transition-all">로그인</Link>
+            <Link href="/signup" className="px-4 py-2 rounded-full bg-[#1DB954] text-black text-xs font-black hover:bg-[#1ed760] transition-all">회원가입</Link>
+          </div>
+        </div>
+      )}
+
       {/* Quick Action Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <Link href="/check" className="group bg-[#181818] rounded-2xl p-5 border border-[#282828] hover:bg-[#282828] hover:border-[#1DB954]/40 transition-all duration-200">
           <div className="text-3xl mb-3">✏️</div>
-          <h3 className="font-black text-white text-base leading-tight">KDST 진단</h3>
-          <p className="text-[#727272] text-xs mt-1.5">{ageInfo.ageMonths}개월 맞춤 평가 시작</p>
+          <h3 className="font-black text-white text-base leading-tight">KDST 자가진단</h3>
+          <p className="text-[#727272] text-xs mt-1.5">발달 검사 · {ageInfo.ageMonths}개월 문진표와 진단 이력</p>
           <div className="mt-3 text-[#1DB954] text-xs font-bold group-hover:translate-x-1 transition-transform">시작 →</div>
         </Link>
         <Link href="/milestones" className="group bg-[#181818] rounded-2xl p-5 border border-[#282828] hover:bg-[#282828] hover:border-[#1DB954]/40 transition-all duration-200">
           <div className="text-3xl mb-3">📘</div>
           <h3 className="font-black text-white text-base leading-tight">월령별 발달</h3>
-          <p className="text-[#727272] text-xs mt-1.5">단계별 성장 기준표</p>
+          <p className="text-[#727272] text-xs mt-1.5">단계별 발달 기준표</p>
           <div className="mt-3 text-[#1DB954] text-xs font-bold group-hover:translate-x-1 transition-transform">보기 →</div>
         </Link>
         <Link href="/history" className="group bg-[#181818] rounded-2xl p-5 border border-[#282828] hover:bg-[#282828] hover:border-[#1DB954]/40 transition-all duration-200 col-span-2 sm:col-span-1">
-          <div className="text-3xl mb-3">📈</div>
+          <div className="text-3xl mb-3">📏</div>
           <h3 className="font-black text-white text-base leading-tight">성장 기록</h3>
-          <p className="text-[#727272] text-xs mt-1.5">누적 발달 성장 그래프</p>
-          <div className="mt-3 text-[#1DB954] text-xs font-bold group-hover:translate-x-1 transition-transform">보기 →</div>
+          <p className="text-[#727272] text-xs mt-1.5">신체 측정 · 키·몸무게 백분위와 그래프</p>
+          <div className="mt-3 text-[#1DB954] text-xs font-bold group-hover:translate-x-1 transition-transform">기록하기 →</div>
         </Link>
       </div>
+
 
       {/* Current Milestone Info */}
       {milestone && (
