@@ -9,15 +9,25 @@ const TYPE_CONFIG: Record<Facility['type'], { color: string; bg: string; border:
   '국공립어린이집': { color: '#f59e0b', bg: 'bg-[#f59e0b]/10',  border: 'border-[#f59e0b]/30' },
   '민간어린이집':   { color: '#a855f7', bg: 'bg-[#a855f7]/10',  border: 'border-[#a855f7]/30' },
   '가정어린이집':   { color: '#f97316', bg: 'bg-[#f97316]/10',  border: 'border-[#f97316]/30' },
+  '직장어린이집':   { color: '#06b6d4', bg: 'bg-[#06b6d4]/10',  border: 'border-[#06b6d4]/30' },
 };
 
 function FacilityCard({ f }: { f: Facility }) {
-  const cfg = TYPE_CONFIG[f.type];
+  const cfg = TYPE_CONFIG[f.type] || TYPE_CONFIG['민간어린이집'];
+  const isKindergarten = f.type.includes('유치원');
+  const portalUrl = isKindergarten
+    ? 'https://e-childschoolinfo.moe.go.kr'
+    : 'https://info.childcare.go.kr';
+  const portalName = isKindergarten ? '유치원알리미' : '아이사랑 포털';
+
   return (
     <div className={`bg-[#282828] rounded-2xl p-4 border ${cfg.border} space-y-3`}>
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h4 className="font-black text-white text-sm">{f.name}</h4>
+          <h4 className="font-black text-white text-sm flex items-center gap-2">
+            {f.name}
+            {f.phone && <span className="text-[11px] font-normal text-[#b3b3b3]">📞 {f.phone}</span>}
+          </h4>
           <p className="text-[#727272] text-xs mt-0.5">{f.address}</p>
         </div>
         <span className={`text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 ${cfg.bg} ${cfg.border}`}
@@ -45,15 +55,26 @@ function FacilityCard({ f }: { f: Facility }) {
         </div>
       </div>
 
-      {f.features.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {f.features.map((feat, i) => (
-            <span key={i} className="text-[10px] font-bold bg-[#1a1a1a] text-[#727272] px-2 py-1 rounded-full border border-[#383838]">
-              {feat}
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="flex items-center justify-between gap-2 pt-1">
+        {f.features.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5 flex-1">
+            {f.features.map((feat, i) => (
+              <span key={i} className="text-[10px] font-bold bg-[#1a1a1a] text-[#727272] px-2 py-1 rounded-full border border-[#383838]">
+                {feat}
+              </span>
+            ))}
+          </div>
+        ) : <div />}
+
+        <a
+          href={portalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] font-bold text-[#b3b3b3] hover:text-[#1DB954] hover:underline shrink-0 bg-[#1a1a1a] px-2.5 py-1 rounded-full border border-[#383838] transition-colors"
+        >
+          {portalName} 공시정보 ↗
+        </a>
+      </div>
     </div>
   );
 }
@@ -165,6 +186,39 @@ export default function KindergartenPage() {
       {/* 🔍 검색 탭 */}
       {activeTab === 'search' && (
         <div className="space-y-4">
+          {/* 정부 공식 포털 연계 안내 배너 */}
+          <div className="bg-[#181818] rounded-2xl p-4 border border-[#1DB954]/30 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-white flex items-center gap-1.5">
+                <span className="text-base">🏛️</span> 교육부·보건복지부 공식 공시정보 연계
+              </span>
+              <span className="text-[10px] text-[#1DB954] font-bold bg-[#1DB954]/10 px-2 py-0.5 rounded-full border border-[#1DB954]/20">
+                실시간 100% 공시
+              </span>
+            </div>
+            <p className="text-[#b3b3b3] text-xs leading-relaxed">
+              아이아이는 <b>개포동 이화유치원</b> 등 서울·수도권 주요 시설 정보와 함께 정부 공식 포털을 연결해 드립니다. 서울 모든 유치원과 어린이집의 상세 공시(교사대아동비율, 급식, 통학버스, CCTV)를 1초 만에 확인해 보세요!
+            </p>
+            <div className="flex gap-2 pt-1">
+              <a
+                href="https://e-childschoolinfo.moe.go.kr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 rounded-xl bg-[#282828] border border-[#383838] hover:border-[#1DB954] text-white text-xs font-bold text-center transition-all"
+              >
+                🏫 유치원알리미 포털 ↗
+              </a>
+              <a
+                href="https://info.childcare.go.kr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 rounded-xl bg-[#282828] border border-[#383838] hover:border-[#f59e0b] text-white text-xs font-bold text-center transition-all"
+              >
+                👶 어린이집정보공개포털 ↗
+              </a>
+            </div>
+          </div>
+
           {/* Search input */}
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔍</span>
@@ -172,7 +226,7 @@ export default function KindergartenPage() {
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="개포동, 잠실, 목동, 판교, 해운대 등 동 이름 입력..."
+              placeholder="이화유치원, 개포동, 잠실, 목동, 숲체험, 국공립 등 입력..."
               className="w-full bg-[#282828] border-2 border-[#383838] rounded-2xl pl-12 pr-4 py-4 text-white font-medium placeholder-[#535353] focus:border-[#1DB954] focus:outline-none transition-all text-sm"
             />
             {searchQuery && (
@@ -185,16 +239,36 @@ export default function KindergartenPage() {
 
           {/* Search results */}
           {searchQuery.length >= 1 && searchResults.length === 0 && (
-            <div className="bg-[#181818] rounded-2xl p-8 border border-[#282828] text-center space-y-3">
+            <div className="bg-[#181818] rounded-2xl p-8 border border-[#282828] text-center space-y-4">
               <div className="text-4xl">🤔</div>
-              <p className="text-[#b3b3b3] font-medium">"{searchQuery}" 검색 결과가 없습니다.</p>
-              <p className="text-[#535353] text-xs">서울, 경기, 부산, 인천 주요 지역만 수록되어 있습니다.<br/>구(區) 이름이나 동(洞) 이름으로 검색해 보세요.</p>
+              <p className="text-[#b3b3b3] font-medium">"{searchQuery}"에 해당하는 내부 보관 데이터가 없습니다.</p>
+              <p className="text-[#535353] text-xs">
+                정부 공식 포털에서 대한민국 전체 유치원 및 어린이집을 바로 검색하실 수 있습니다.
+              </p>
+              <div className="flex justify-center gap-2 pt-2">
+                <a
+                  href={`https://e-childschoolinfo.moe.go.kr`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-full bg-[#1DB954] text-black text-xs font-black hover:bg-[#1ed760] transition-all"
+                >
+                  유치원알리미에서 검색 ↗
+                </a>
+                <a
+                  href={`https://info.childcare.go.kr`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-full border border-[#535353] text-[#b3b3b3] text-xs font-bold hover:text-white hover:border-white transition-all"
+                >
+                  어린이집정보포털에서 검색 ↗
+                </a>
+              </div>
             </div>
           )}
 
           {searchResults.length > 0 && (
             <div className="space-y-3">
-              <p className="text-[#727272] text-sm font-bold">"{searchQuery}" 검색 결과 — {searchResults.length}개 지역</p>
+              <p className="text-[#727272] text-sm font-bold">"{searchQuery}" 검색 결과 — {searchResults.length}개 지역/시설</p>
               {searchResults.map((data, i) => <DongCard key={i} data={data} />)}
             </div>
           )}
@@ -204,7 +278,7 @@ export default function KindergartenPage() {
             <div className="space-y-3">
               <p className="text-xs font-bold text-[#727272] uppercase tracking-wider">💡 빠른 검색 추천</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {['개포동', '대치동', '잠실동', '목동', '여의도동', '판교동', '수내동', '동탄동', '해운대동', '송도동', '중계동', '반포동'].map(dong => (
+                {['이화유치원', '개포동', '대치동', '도곡동', '반포동', '잠실동', '목동', '여의도동', '아현동', '성수동', '중계동', '고덕동'].map(dong => (
                   <button key={dong} onClick={() => setSearchQuery(dong)}
                     className="py-2.5 px-3 rounded-xl text-xs font-bold bg-[#181818] border border-[#282828] text-[#b3b3b3] hover:border-[#1DB954]/40 hover:text-[#1DB954] transition-all text-center">
                     {dong}

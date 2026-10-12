@@ -43,10 +43,22 @@ export function Navbar() {
               <div className={`text-[9px] font-bold ${syncState === 'error' ? 'text-red-400' : 'text-[#1DB954]'}`}>{syncLabel}</div>
             )}
           </div>
-          <button onClick={handleLogout}
-            className="px-3 py-1.5 rounded-full border border-[#535353] text-[11px] font-bold text-[#b3b3b3] hover:text-white hover:border-white transition-all">
-            로그아웃
-          </button>
+          <div className="flex items-center gap-1.5">
+            <Link
+              href="/change-password"
+              onClick={() => setMobileOpen(false)}
+              className="px-2.5 py-1.5 rounded-full border border-[#383838] text-[11px] font-bold text-[#b3b3b3] hover:text-white hover:border-[#1DB954] transition-all"
+              title="비밀번호 변경"
+            >
+              🔐 변경
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 rounded-full border border-[#535353] text-[11px] font-bold text-[#b3b3b3] hover:text-white hover:border-white transition-all"
+            >
+              로그아웃
+            </button>
+          </div>
         </div>
       );
     }

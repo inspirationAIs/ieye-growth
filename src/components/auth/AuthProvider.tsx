@@ -13,6 +13,8 @@ interface AuthContextValue {
   signup: (userId: string, email: string, password: string) => Promise<void>;
   login: (identifier: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+  resetPassword: (userId: string, email: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -99,8 +101,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearLocalUserData(); // 다음 사람이 이 기기에서 내 기록을 보지 못하도록 삭제
   }, [push]);
 
+  const changePassword = useCallback(async (oldPassword: string, newPassword: string) => {
+    if (!sessionRef.current) throw new Error('로그인이 필요합니다.');
+    const nextSession = await auth.changePassword(sessionRef.current, oldPassword, newPassword);
+    sessionRef.current = nextSession;
+    setSession(nextSession);
+  }, []);
+
+  const resetPassword = useCallback(async (userId: string, email: string, newPassword: string) => {
+    await auth.resetPassword(userId, email, newPassword);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ session, ready, syncState, signup, login, logout }}>
+    <AuthContext.Provider value={{ session, ready, syncState, signup, login, logout, changePassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

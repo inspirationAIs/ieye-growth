@@ -80,6 +80,41 @@ function doPost(e) {
       return out_({ ok: true });
     }
 
+    if (req.action === 'changePassword') {
+      const row = findRow_(sh, req.userId);
+      if (row < 0) return out_({ ok: false, error: 'USER_NOT_FOUND' });
+      const r = sh.getRange(row, 1, 1, 8).getValues()[0];
+      if (req.token && r[4] !== req.token) return out_({ ok: false, error: 'INVALID_SESSION' });
+      if (req.oldPassHash && sha256_(r[2] + req.oldPassHash) !== r[3]) return out_({ ok: false, error: 'INVALID_PASSWORD' });
+      if (!req.newPassHash) return out_({ ok: false, error: 'BAD_PASSWORD' });
+
+      const newSalt = Utilities.getUuid();
+      const newToken = Utilities.getUuid();
+      sh.getRange(row, 3).setValue(newSalt);
+      sh.getRange(row, 4).setValue(sha256_(newSalt + req.newPassHash));
+      sh.getRange(row, 5).setValue(newToken);
+      sh.getRange(row, 7).setValue(new Date().toISOString());
+      return out_({ ok: true, token: newToken });
+    }
+
+    if (req.action === 'resetPassword') {
+      const row = findRow_(sh, req.userId);
+      if (row < 0) return out_({ ok: false, error: 'USER_NOT_FOUND' });
+      const r = sh.getRange(row, 1, 1, 8).getValues()[0];
+      if (String(r[1]).toLowerCase() !== String(req.email || '').toLowerCase()) {
+        return out_({ ok: false, error: 'EMAIL_MISMATCH' });
+      }
+      if (!req.newPassHash) return out_({ ok: false, error: 'BAD_PASSWORD' });
+
+      const newSalt = Utilities.getUuid();
+      const newToken = Utilities.getUuid();
+      sh.getRange(row, 3).setValue(newSalt);
+      sh.getRange(row, 4).setValue(sha256_(newSalt + req.newPassHash));
+      sh.getRange(row, 5).setValue(newToken);
+      sh.getRange(row, 7).setValue(new Date().toISOString());
+      return out_({ ok: true });
+    }
+
     return out_({ ok: false, error: 'UNKNOWN_ACTION' });
   } catch (err) {
     return out_({ ok: false, error: String(err) });

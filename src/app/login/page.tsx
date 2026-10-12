@@ -44,7 +44,12 @@ export default function LoginPage() {
             placeholder="아이디 또는 이메일 입력" autoComplete="username" required />
         </div>
         <div>
-          <label className="block text-sm font-bold text-[#b3b3b3] mb-2">비밀번호</label>
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-bold text-[#b3b3b3]">비밀번호</label>
+            <Link href="/change-password?tab=reset" className="text-xs text-[#727272] hover:text-[#1DB954] transition-colors">
+              비밀번호를 잊으셨나요?
+            </Link>
+          </div>
           <input className={input} type="password" value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="비밀번호 입력" autoComplete="current-password" required />
         </div>

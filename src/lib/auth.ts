@@ -73,6 +73,11 @@ const ERROR_MESSAGES: Record<string, string> = {
   EMAIL_EXISTS: '이미 가입된 이메일입니다.',
   INVALID_LOGIN: '아이디(이메일) 또는 비밀번호가 올바르지 않습니다.',
   INVALID_SESSION: '로그인이 만료되었습니다. 다시 로그인해 주세요.',
+  INVALID_PASSWORD: '현재 비밀번호가 일치하지 않습니다.',
+  USER_NOT_FOUND: '등록되지 않은 사용자입니다.',
+  EMAIL_MISMATCH: '아이디와 가입 시 등록한 이메일이 일치하지 않습니다.',
+  BAD_PASSWORD: '비밀번호는 8자 이상이어야 합니다.',
+  UNKNOWN_ACTION: '서버 스크립트 업데이트가 필요합니다. 구글 시트 배포 관리에서 새 버전으로 배포해 주세요.',
 };
 const friendly = (code?: string) => ERROR_MESSAGES[code ?? ''] ?? `서버 오류가 발생했습니다. (${code ?? 'unknown'})`;
 
@@ -130,4 +135,57 @@ export async function pushData(session: Session, data: CloudData): Promise<void>
     return;
   }
   localStorage.setItem(LOCAL_BLOB_PREFIX + session.userId, JSON.stringify(data));
+}
+
+export async function changePassword(session: Session, oldPass: string, newPass: string): Promise<Session> {
+  if (newPass.length < 8) throw new Error(friendly('BAD_PASSWORD'));
+  const oldHash = await hashPassword(oldPass);
+  const newHash = await hashPassword(newPass);
+
+  if (isCloudEnabled()) {
+    const r = await gas<ServerReply>({
+      action: 'changePassword',
+      userId: session.userId,
+      token: session.token,
+      oldPassHash: oldHash,
+      newPassHash: newHash,
+    });
+    if (!r.ok) throw new Error(friendly(r.error));
+    const nextSession: Session = { ...session, token: r.token ?? session.token };
+    saveSession(nextSession);
+    return nextSession;
+  }
+
+  const users = readLocalUsers();
+  const idx = users.findIndex((u) => u.userId === session.userId && u.hash === oldHash);
+  if (idx < 0) throw new Error(friendly('INVALID_PASSWORD'));
+  users[idx].hash = newHash;
+  localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
+  const nextSession: Session = { ...session, token: randomToken() };
+  saveSession(nextSession);
+  return nextSession;
+}
+
+export async function resetPassword(userId: string, email: string, newPass: string): Promise<void> {
+  const id = userId.trim().toLowerCase();
+  const mail = email.trim().toLowerCase();
+  if (newPass.length < 8) throw new Error(friendly('BAD_PASSWORD'));
+  const newHash = await hashPassword(newPass);
+
+  if (isCloudEnabled()) {
+    const r = await gas<ServerReply>({
+      action: 'resetPassword',
+      userId: id,
+      email: mail,
+      newPassHash: newHash,
+    });
+    if (!r.ok) throw new Error(friendly(r.error));
+    return;
+  }
+
+  const users = readLocalUsers();
+  const idx = users.findIndex((u) => u.userId === id && u.email === mail);
+  if (idx < 0) throw new Error(friendly('EMAIL_MISMATCH'));
+  users[idx].hash = newHash;
+  localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
 }
