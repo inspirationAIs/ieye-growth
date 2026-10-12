@@ -8,6 +8,9 @@ export interface Facility {
   operatingHours: string;
   fee: string;
   phone?: string;
+  city?: string;
+  district?: string;
+  dong?: string;
 }
 
 export interface DongData {
@@ -24,12 +27,29 @@ export const KINDERGARTEN_DB: DongData[] = [
   // =========================================================================
   {
     dong: '개포동', district: '강남구', city: '서울특별시',
-    areaNote: '개포 신축 대단지 입주로 영유아 보육 수요 집중. 명문 사립유치원(이화유치원 등)과 단지 내 신설 국공립 어린이집 다수 위치.',
+    areaNote: '개포 신축 대단지 입주로 영유아 보육 수요 집중. 명문 사립유치원(이화유치원, 돌샘유치원 등)과 단지 내 신설 국공립 어린이집 다수 위치.',
     facilities: [
+      {
+        name: '돌샘유치원',
+        type: '사립유치원',
+        address: '서울 강남구 양재대로 55길 28 (개포·일원 대단지 인근)',
+        city: '서울특별시',
+        district: '강남구',
+        dong: '개포동',
+        ageRange: '만 3~5세',
+        features: ['강남 대표 대규모 사립유치원', '창의인성프로그램', '자연친화학습', '통학버스운행', '다목적전용강당'],
+        capacity: 260,
+        operatingHours: '09:00~14:30 (방과후과정 ~19:00)',
+        fee: '정부지원(누리과정) 외 특성화비 (약 35~50만원)',
+        phone: '02-3411-0081'
+      },
       {
         name: '이화유치원',
         type: '사립유치원',
         address: '서울 강남구 개포로 109길 5 (개포동 대청역 인근)',
+        city: '서울특별시',
+        district: '강남구',
+        dong: '개포동',
         ageRange: '만 3~5세',
         features: ['이화여대 유아교육 프로그램', '몬테소리 교구', '생태자연체험', '통학차량운행', '창의융합과정'],
         capacity: 135,
@@ -275,6 +295,7 @@ export const KINDERGARTEN_DB: DongData[] = [
     areaNote: 'DMC 미디어 방송 클러스터 및 월드컵공원·하늘공원 자연 환경. 직장 어린이집과 공원 숲체험 특화.',
     facilities: [
       { name: '상암초등학교 병설유치원', type: '국공립유치원', address: '서울 마포구 매봉산로 25', ageRange: '만 3~5세', features: ['월드컵공원숲체험', '초등연계', '안전통학'], capacity: 50, operatingHours: '09:00~14:00', fee: '무료' },
+      { name: '돌샘유치원', type: '사립유치원', address: '서울 마포구 월드컵북로 230 (상암·성산)', ageRange: '만 3~5세', features: ['생태프로그램', '영어놀이', '안심보육', '셔틀운행'], capacity: 180, operatingHours: '09:00~14:30', fee: '정부지원 외 약 35~48만원', phone: '02-303-3450' },
       { name: 'MBC 직장어린이집', type: '직장어린이집', address: '서울 마포구 성암로 255', ageRange: '만 0~5세', features: ['미디어체험', '직원복지', '영양안심'], capacity: 90, operatingHours: '07:30~21:00', fee: '회사지원' },
       { name: '구립 상암DMC어린이집', type: '국공립어린이집', address: '서울 마포구 월드컵북로 402', ageRange: '만 0~5세', features: ['구립인증', '연장보육', '생태놀이'], capacity: 65, operatingHours: '07:30~19:30', fee: '정부지원 무료' }
     ]
@@ -369,6 +390,7 @@ export const KINDERGARTEN_DB: DongData[] = [
     areaNote: '고덕그라시움, 고덕아르테온 등 1만여 세대 대규모 재건축 신도시급 주거단지.',
     facilities: [
       { name: '고덕초등학교 병설유치원', type: '국공립유치원', address: '서울 강동구 동남로 82길 22', ageRange: '만 3~5세', features: ['공립유치원', '방과후돌봄', '무상급식'], capacity: 55, operatingHours: '09:00~14:00', fee: '무료' },
+      { name: '돌샘유치원', type: '사립유치원', address: '서울 강동구 아리수로 93길 45 (고덕·암사)', ageRange: '만 3~5세', features: ['숲체험', '창의미술', '통학차량운행', '대규모 전용시설'], capacity: 227, operatingHours: '09:00~14:30', fee: '정부지원 외 약 35~48만원', phone: '02-442-7001' },
       { name: '구립 그라시움어린이집', type: '국공립어린이집', address: '서울 강동구 고덕로 333 단지 내', ageRange: '만 0~5세', features: ['단지국공립', '최신보육시설', '영아전담반'], capacity: 90, operatingHours: '07:30~19:30', fee: '정부지원 무료' },
       { name: '배재유치원', type: '사립유치원', address: '서울 강동구 고덕로 227', ageRange: '만 3~5세', features: ['역사와전통', '기독교인성', '생태놀이'], capacity: 130, operatingHours: '09:00~14:30', fee: '월 35~55만원' }
     ]
@@ -436,6 +458,13 @@ export const KINDERGARTEN_DB: DongData[] = [
       { name: '엔씨소프트 웃는땅콩어린이집', type: '직장어린이집', address: '경기 성남시 분당구 대왕판교로 648', ageRange: '만 0~5세', features: ['IT대표직장보육', '자체개발놀이과정', '수영장보유'], capacity: 160, operatingHours: '07:30~20:30', fee: '회사지원' },
       { name: '시립 판교어린이집', type: '국공립어린이집', address: '경기 성남시 분당구 판교원로 82길', ageRange: '만 0~5세', features: ['시립국공립', '영아전담', '친환경식단'], capacity: 70, operatingHours: '07:30~19:30', fee: '정부지원 무료' }
     ]
+  },
+  {
+    dong: '월평동', district: '서구', city: '대전광역시',
+    areaNote: '정부대전청사 및 대단지 아파트 밀집 지역.',
+    facilities: [
+      { name: '돌샘유치원', type: '사립유치원', address: '대전 서구 청사로 65', ageRange: '만 3~5세', features: ['창의놀이', '생태체험', '통학차량운행'], capacity: 173, operatingHours: '09:00~14:30', fee: '정부지원 외 약 30~45만원', phone: '042-485-0551' }
+    ]
   }
 ];
 
@@ -493,7 +522,7 @@ export function generateDynamicDong(dongName: string): DongData {
 
 /**
  * 똑똑한 통합 검색 함수:
- * 1. 유치원/어린이집 이름(예: '이화', '이화유치원', '한솔', '블레스티지', '자이')
+ * 1. 유치원/어린이집 이름(예: '이화', '돌샘', '돌샘유치원', '한솔', '블레스티지', '자이')
  * 2. 동(洞) 이름(예: '개포동', '개포', '대치', '잠실', '반포')
  * 3. 구(區) 이름(예: '강남구', '서초구', '송파구', '마포구')
  * 4. 주소, 특색 교육 키워드(예: '개포로', '몬테소리', '숲체험', '영어')
@@ -523,12 +552,11 @@ export function searchFacilities(query: string): DongData[] {
       // 동 이름이나 구 이름으로 검색했을 때는 해당 동의 전체 시설을 보여줌
       results.push(d);
     } else if (matchingFacilities.length > 0) {
-      // 시설 이름(예: "이화유치원")으로 검색했을 때는 해당 시설이 포함된 동을 반환 (검색된 시설 우선 배치)
-      const nonMatching = d.facilities.filter(f => !matchingFacilities.includes(f));
+      // 시설 이름(예: "돌샘", "이화유치원")으로 검색했을 때는 일치하는 시설만 깔끔하게 반환
       results.push({
         ...d,
-        facilities: [...matchingFacilities, ...nonMatching],
-        areaNote: `🎯 "${query}" 검색과 일치하는 시설이 포함된 지역입니다. (${d.city} ${d.district} ${d.dong})`
+        facilities: matchingFacilities,
+        areaNote: `🎯 "${query}" 검색과 일치하는 시설입니다. (${d.city} ${d.district} ${d.dong})`
       });
     }
   }
@@ -537,8 +565,8 @@ export function searchFacilities(query: string): DongData[] {
     return results;
   }
 
-  // 2글자 이상이면 동적 표준 모델 제공
-  if (q.length >= 2) {
+  // 동/읍/면/구/시 단위 검색인 경우에만 동적 표준 모델 제공
+  if (q.endsWith('동') || q.endsWith('구') || q.endsWith('시') || q.endsWith('읍') || q.endsWith('면')) {
     return [generateDynamicDong(query.trim())];
   }
 

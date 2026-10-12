@@ -12,7 +12,7 @@ const TYPE_CONFIG: Record<Facility['type'], { color: string; bg: string; border:
   '직장어린이집':   { color: '#06b6d4', bg: 'bg-[#06b6d4]/10',  border: 'border-[#06b6d4]/30' },
 };
 
-function FacilityCard({ f }: { f: Facility }) {
+function FacilityCard({ f, city, district, dong }: { f: Facility; city: string; district: string; dong: string }) {
   const cfg = TYPE_CONFIG[f.type] || TYPE_CONFIG['민간어린이집'];
   const isKindergarten = f.type.includes('유치원');
   const portalUrl = isKindergarten
@@ -20,14 +20,25 @@ function FacilityCard({ f }: { f: Facility }) {
     : 'https://info.childcare.go.kr';
   const portalName = isKindergarten ? '유치원알리미' : '아이사랑 포털';
 
+  const displayCity = f.city || city || '서울특별시';
+  const displayDistrict = f.district || district || '강남구';
+  const displayDong = f.dong || dong || '';
+
   return (
     <div className={`bg-[#282828] rounded-2xl p-4 border ${cfg.border} space-y-3`}>
+      {/* 상단: 시설명 및 시도/시군구 표기 (어린이집정보공개포털 표준) */}
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <h4 className="font-black text-white text-sm flex items-center gap-2">
-            {f.name}
-            {f.phone && <span className="text-[11px] font-normal text-[#b3b3b3]">📞 {f.phone}</span>}
-          </h4>
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="font-black text-white text-base">
+              {f.name}
+            </h4>
+            {/* 🌟 시도 / 시군구 라벨 (사용자 요청 반영: 이름 옆에 명확히 표기) */}
+            <span className="text-xs font-black text-[#1DB954] bg-[#1DB954]/10 px-2.5 py-0.5 rounded-full border border-[#1DB954]/30">
+              📍 {displayCity} / {displayDistrict} {displayDong ? `(${displayDong})` : ''}
+            </span>
+            {f.phone && <span className="text-xs text-[#b3b3b3] font-normal">📞 {f.phone}</span>}
+          </div>
           <p className="text-[#727272] text-xs mt-0.5">{f.address}</p>
         </div>
         <span className={`text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 ${cfg.bg} ${cfg.border}`}
@@ -36,7 +47,11 @@ function FacilityCard({ f }: { f: Facility }) {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+        <div className="bg-[#1a1a1a] rounded-xl p-2">
+          <p className="text-[#535353] font-bold mb-0.5">시도 / 시군구</p>
+          <p className="text-white font-bold truncate">{displayCity} / {displayDistrict}</p>
+        </div>
         <div className="bg-[#1a1a1a] rounded-xl p-2">
           <p className="text-[#535353] font-bold mb-0.5">연령</p>
           <p className="text-[#b3b3b3] font-semibold">{f.ageRange}</p>
@@ -44,10 +59,6 @@ function FacilityCard({ f }: { f: Facility }) {
         <div className="bg-[#1a1a1a] rounded-xl p-2">
           <p className="text-[#535353] font-bold mb-0.5">정원</p>
           <p className="text-[#b3b3b3] font-semibold">{f.capacity}명</p>
-        </div>
-        <div className="bg-[#1a1a1a] rounded-xl p-2">
-          <p className="text-[#535353] font-bold mb-0.5">운영시간</p>
-          <p className="text-[#b3b3b3] font-semibold">{f.operatingHours}</p>
         </div>
         <div className="bg-[#1a1a1a] rounded-xl p-2">
           <p className="text-[#535353] font-bold mb-0.5">보육료</p>
@@ -79,8 +90,8 @@ function FacilityCard({ f }: { f: Facility }) {
   );
 }
 
-function DongCard({ data }: { data: DongData }) {
-  const [expanded, setExpanded] = useState(false);
+function DongCard({ data, autoExpand = false }: { data: DongData; autoExpand?: boolean }) {
+  const [expanded, setExpanded] = useState(autoExpand);
   const [typeFilter, setTypeFilter] = useState<Facility['type'] | 'all'>('all');
 
   const types = [...new Set(data.facilities.map(f => f.type))] as Facility['type'][];
@@ -132,7 +143,9 @@ function DongCard({ data }: { data: DongData }) {
 
           {/* Facility cards */}
           <div className="space-y-3">
-            {filtered.map((f, i) => <FacilityCard key={i} f={f} />)}
+            {filtered.map((f, i) => (
+              <FacilityCard key={i} f={f} city={data.city} district={data.district} dong={data.dong} />
+            ))}
           </div>
         </div>
       )}
@@ -269,7 +282,7 @@ export default function KindergartenPage() {
           {searchResults.length > 0 && (
             <div className="space-y-3">
               <p className="text-[#727272] text-sm font-bold">"{searchQuery}" 검색 결과 — {searchResults.length}개 지역/시설</p>
-              {searchResults.map((data, i) => <DongCard key={i} data={data} />)}
+              {searchResults.map((data, i) => <DongCard key={i} data={data} autoExpand={true} />)}
             </div>
           )}
 
@@ -278,7 +291,7 @@ export default function KindergartenPage() {
             <div className="space-y-3">
               <p className="text-xs font-bold text-[#727272] uppercase tracking-wider">💡 빠른 검색 추천</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {['이화유치원', '개포동', '대치동', '도곡동', '반포동', '잠실동', '목동', '여의도동', '아현동', '성수동', '중계동', '고덕동'].map(dong => (
+                {['돌샘유치원', '이화유치원', '개포동', '대치동', '도곡동', '반포동', '잠실동', '목동', '여의도동', '아현동', '성수동', '고덕동'].map(dong => (
                   <button key={dong} onClick={() => setSearchQuery(dong)}
                     className="py-2.5 px-3 rounded-xl text-xs font-bold bg-[#181818] border border-[#282828] text-[#b3b3b3] hover:border-[#1DB954]/40 hover:text-[#1DB954] transition-all text-center">
                     {dong}
